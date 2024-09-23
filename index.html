@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>文本与图片浏览</title>
+    <title>图片缩放与拖拽</title>
     <style>
         body, html {
             margin: 0;
@@ -17,10 +17,31 @@
             height: 100%;
         }
 
-        .top, .bottom {
+        .top {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
+        }
+
+        .bottom {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #imageContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none; /* 禁用默认手势行为 */
+        }
+
+        #imageContainer img {
+            width: 100%;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
         }
 
         .text-content {
@@ -28,24 +49,12 @@
             font-size: 16px;
             line-height: 1.6;
         }
-
-        .image-container {
-            width: 100%;
-            overflow: hidden;
-            touch-action: none; /* 禁止默认手势操作 */
-        }
-
-        .image {
-            width: 100%;
-            display: block;
-            transition: transform 0.2s ease; /* 平滑的缩放效果 */
-        }
     </style>
 </head>
 <body>
     <div class="split">
         <!-- 上半部分显示文本 -->
-        <div class="top" id="top">
+        <div class="top">
             <div class="text-content">
 砰砰砰！喀锵！
 
@@ -99,67 +108,73 @@
             </div>
         </div>
 
-        <!-- 下半部分显示图片并支持缩放 -->
+        <!-- 下半部分显示可缩放和拖拽的图片 -->
         <div class="bottom" id="bottom">
-            <div class="image-container" id="imageContainer">
-                <img src="b.jpg" alt="Image B" class="image" id="zoomableImage">
+            <div id="imageContainer">
+                <img id="image" src="b.jpg" alt="Image B">
             </div>
         </div>
     </div>
 
     <script>
-        // 滚动位置恢复
+        let img = document.getElementById("image");
+        let imageContainer = document.getElementById("imageContainer");
+
+        let scale = localStorage.getItem('scale') ? parseFloat(localStorage.getItem('scale')) : 1;
+        let lastScale = 1;
+        let posX = localStorage.getItem('posX') ? parseFloat(localStorage.getItem('posX')) : 0;
+        let posY = localStorage.getItem('posY') ? parseFloat(localStorage.getItem('posY')) : 0;
+        let lastPosX = 0, lastPosY = 0;
+        let isDragging = false;
+        let initialX, initialY;
+
+        function setTransform() {
+            img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+        }
+
+        // 恢复上次位置和缩放比例
         window.onload = function() {
-            document.getElementById('top').scrollTop = localStorage.getItem('topScroll') || 0;
-            document.getElementById('bottom').scrollTop = localStorage.getItem('bottomScroll') || 0;
-        };
+            setTransform();
+        }
 
-        document.getElementById('top').onscroll = function() {
-            localStorage.setItem('topScroll', this.scrollTop);
-        };
-
-        document.getElementById('bottom').onscroll = function() {
-            localStorage.setItem('bottomScroll', this.scrollTop);
-        };
-
-        // 缩放功能
-        let image = document.getElementById('zoomableImage');
-        let container = document.getElementById('imageContainer');
-        let scale = 1;
-        let startDistance = 0;
-
-        container.addEventListener('touchstart', function(e) {
+        // 处理双指缩放
+        let initialDistance = 0;
+        imageContainer.addEventListener('touchstart', function(e) {
             if (e.touches.length === 2) {
-                // 获取初始两指间距离
-                startDistance = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
                 );
+                lastScale = scale;
+            } else if (e.touches.length === 1) {
+                isDragging = true;
+                initialX = e.touches[0].clientX - lastPosX;
+                initialY = e.touches[0].clientY - lastPosY;
             }
         });
 
-        container.addEventListener('touchmove', function(e) {
+        imageContainer.addEventListener('touchmove', function(e) {
             if (e.touches.length === 2) {
-                // 获取移动中的两指间距离
                 let currentDistance = Math.hypot(
-                    e.touches[0].pageX - e.touches[1].pageX,
-                    e.touches[0].pageY - e.touches[1].pageY
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
                 );
-
-                // 计算缩放比例
-                let scaleChange = currentDistance / startDistance;
-
-                // 限制缩放范围
-                scale = Math.min(Math.max(1, scale * scaleChange), 3);
-
-                // 应用缩放
-                image.style.transform = `scale(${scale})`;
-
-                // 更新 startDistance
-                startDistance = currentDistance;
-
-                e.preventDefault(); // 防止页面滚动
+                scale = Math.max(0.5, Math.min(lastScale * (currentDistance / initialDistance), 3)); // 限制缩放范围
+                setTransform();
+            } else if (e.touches.length === 1 && isDragging) {
+                posX = e.touches[0].clientX - initialX;
+                posY = e.touches[0].clientY - initialY;
+                lastPosX = posX;
+                lastPosY = posY;
+                setTransform();
             }
+        });
+
+        imageContainer.addEventListener('touchend', function(e) {
+            isDragging = false;
+            localStorage.setItem('scale', scale);
+            localStorage.setItem('posX', posX);
+            localStorage.setItem('posY', posY);
         });
     </script>
 </body>
