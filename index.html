@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本与图片浏览</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .split {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .top, .bottom {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            touch-action: pan-y; /* 允许纵向滚动 */
+        }
+
+        .text-content {
+            white-space: pre-wrap;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .image {
+            width: 100%;
+            display: block;
+            touch-action: pinch-zoom; /* 允许双指缩放 */
+        }
+    </style>
+</head>
+<body>
+    <div class="split">
+        <div class="top" id="top">
+            <div class="text-content">
+砰砰砰！喀锵！
+
+手枪发出子弹用尽的声音后，亚莉亚弯下身体，开始换弹匣。
+
+“——打倒它们了吗？”
+
+“我只是把它们赶到射程外而已。现在它们躲在树后面……待会儿肯定会再跑出来。”
+
+“坚强的孩子。你做到这样已经算很了不起了。”
+
+“……嗄？”
+
+我的语气突然变得很酷，亚莉亚听到不禁皱眉。
+
+啊啊，我又开始了吗？
+
+她的犹豫只维持了一瞬间。
+
+我一手穿过亚莉亚的细腿，另一支手绕过她娇小的后背，将她整个人抱在怀里后，猛然起身。
+
+“哇！”
+
+“我要奖励你，让你稍微当一下公主吧。”
+
+这突如其来的公主抱，让亚莉亚吓傻了眼。
+
+她张大的嘴中露出像猫科动物一样的犬齿，满脸通红。
+
+我抱着亚莉亚，脚踩在跳箱的边缘，一口气跳到仓库的边端。
+
+接着把亚莉亚放在堆积的体育垫子上。
+
+让她像人偶一样坐着。
+
+“什、什什、什么……！”
+
+我敏捷的动作，跟刚才简直像是换了一个人似的，亚莉亚不停眨动双眼。
+
+“公主就坐在这里好好休息吧。开枪这种事情，交给我就行了吧？”
+
+啊啊，我啊。
+
+我似乎已经无法停止自己了。
+
+“你……你……你怎么了？头壳坏掉了吗？”
+
+心慌意乱的娃娃声，被一阵枪声盖过。
+
+铿铿铿铿铿！
+            </div>
+        </div>
+
+        <div class="bottom" id="bottom">
+            <img src="b.jpg" alt="Image B" class="image">
+        </div>
+    </div>
+
+    <script>
+        // 恢复滚动位置
+        window.onload = function() {
+            document.getElementById('top').scrollTop = localStorage.getItem('topScroll') || 0;
+            document.getElementById('bottom').scrollTop = localStorage.getItem('bottomScroll') || 0;
+        };
+
+        // 保存滚动位置
+        document.getElementById('top').onscroll = function() {
+            localStorage.setItem('topScroll', this.scrollTop);
+        };
+
+        document.getElementById('bottom').onscroll = function() {
+            localStorage.setItem('bottomScroll', this.scrollTop);
+        };
+    </script>
+</body>
+</html>
